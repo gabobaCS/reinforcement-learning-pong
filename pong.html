@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Pong — HTML5 Canvas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    canvas {
+      background: #000;
+      border: 2px solid #fff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="pong" width="800" height="500"></canvas>
+
+  <script>
+    const canvas = document.getElementById("pong");
+    const ctx = canvas.getContext("2d");
+    let paused = false;
+
+    // -------------------------
+    // GAME OBJECTS
+    // -------------------------
+    const paddleWidth = 10;
+    const paddleHeight = 100;
+    let playerScore = 0;
+    let aiScore = 0;
+
+    const player = { x: 20, y: canvas.height / 2 - 50, dy: 0 };
+    const ai = { x: canvas.width - 30, y: canvas.height / 2 - 50 };
+    const ball = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: 8,
+      speed: 5,
+      dx: 2,
+      dy: 2
+    };
+
+    // -------------------------
+    // INPUT
+    // -------------------------
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp") player.dy = -6;
+      else if (e.key === "ArrowDown") player.dy = 6;
+    });
+
+    document.addEventListener("keyup", e => {
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") player.dy = 0;
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "p") paused = !paused;
+    });
+
+    // -------------------------
+    // DRAW HELPERS
+    // -------------------------
+    function drawRect(x, y, w, h, color = "white") {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function drawCircle(x, y, r, color = "white") {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // -------------------------
+    // GAME LOGIC
+    // -------------------------
+    function resetBall() {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.dx *= -1; // change direction
+      console.log("Ai Wall")
+    }
+
+    function update() {
+      if (paused) return;
+      // Player paddle
+      player.y += player.dy;
+      player.y = Math.max(0, Math.min(canvas.height - paddleHeight, player.y));
+
+      // Simple AI
+      ai.y += (ball.y - (ai.y + paddleHeight / 2)) * 0.05;
+
+      // Ball
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      if (ball.x < 0) {        // player missed → AI scores
+        aiScore++;
+        resetBall();
+        console.log("CPU Score");
+      }
+
+      if (ball.x > canvas.width) {   // AI missed → player scores
+        playerScore++;
+        resetBall();
+        console.log("Player Score");
+      }
+
+      // Wall collision
+      if (ball.y < 0 || ball.y > canvas.height) {
+        ball.dy *= -1;
+        // console.log("Wall")
+      }
+      // Paddle collision
+      if (
+        ball.x - ball.radius < player.x + paddleWidth &&
+        ball.y > player.y &&
+        ball.y < player.y + paddleHeight
+      ) {
+        ball.dx *= -1;
+        console.log("Collision Player")
+      }
+
+      if (
+        ball.x + ball.radius > ai.x &&
+        ball.y > ai.y &&
+        ball.y < ai.y + paddleHeight
+      ) {
+        ball.dx *= -1;
+        ball.x = ai.x - ball.radius; // Prevent sticking
+        console.log("Collision CPU")
+      }
+
+      if (
+        ball.x + ball.radius > ai.x &&
+        ball.y > ai.y &&
+        ball.y < ai.y + paddleHeight
+      ) {
+        ball.dx *= -1;
+        console.log("Player Score")
+        paused = true;
+      }
+
+      // Out of bounds
+      if (ball.x < 0 || ball.x > canvas.width) resetBall();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "white";
+      ctx.font = "50px 'Roboto Mono'";
+      ctx.fillText(`Player: ${playerScore} | AI: ${aiScore}`, 120, 450);
+
+      drawRect(player.x, player.y, paddleWidth, paddleHeight);
+      drawRect(ai.x, ai.y, paddleWidth, paddleHeight);
+      drawCircle(ball.x, ball.y, ball.radius);
+      drawRect(ai.x, ai.y, 1, 1);
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x, player.y, 5, 5);
+      ctx.fillStyle = "green";
+      ctx.fillRect(ai.x, ai.y, 5, 5);
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+
+</body>
+
+</html>
