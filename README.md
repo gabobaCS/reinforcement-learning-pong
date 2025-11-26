@@ -37,13 +37,6 @@ Simply open `pong.html` in a web browser to play against the basic AI.
 - Arrow Up/Down: Move your paddle
 - P: Pause/unpause the game
 
-### Future Version (Planned)
-Once the RL agent and backend are implemented:
-1. Start the FastAPI server
-2. Open the HTML interface
-3. The game will connect via WebSocket to the Python backend
-4. Play against the PPO-trained agent in real-time
-
 ## Technology Stack
 
 - **Frontend**: HTML5 Canvas, JavaScript, WebSocket API
