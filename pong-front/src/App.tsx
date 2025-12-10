@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import './App.css'
 import { usePongWebSocket } from "@/hooks/usePongWebSocket";
+import { Canvas } from './canvas';
 
 function App() {
-  console.log("up")
-
   const { sendMessage, lastMessage, isConnected } = usePongWebSocket({
     onMessage: (msg) => {
       const data = JSON.parse(msg);
@@ -18,11 +17,20 @@ function App() {
   }, [isConnected]);
 
   return (
-    <>
-      <div>
-        {lastMessage}
+    <div style={{
+      margin: 0,
+      background: '#111',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+    }}>
+      <div style={{ color: 'white', marginBottom: '1rem' }}>
+        {lastMessage && `WebSocket: ${lastMessage}`}
       </div>
-    </>
+      <Canvas />
+    </div>
   )
 }
 
